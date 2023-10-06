@@ -1,0 +1,464 @@
+#include <stdint.h>
+#include <stm32f031x6.h>
+#include "display.h"
+#include "musical_notes.h" //miata = 75x25 keitruck 92x50
+void initClock(void);
+void initTimer(void);
+void initSysTick(void);
+void SysTick_Handler(void);
+void power_saving_delay(uint32_t dly);
+void playNote(uint32_t Freq, uint32_t duration);
+void playMusic(uint32_t *Notes, uint32_t *Duration, int number);
+void delay(volatile uint32_t dly);
+
+static volatile uint32_t milliseconds;
+uint32_t lose[] = {D6, CS6_Db6, C6, B6};
+uint32_t lose2[] = {500, 500, 500, 500};
+uint32_t collect[] = {E6, F6};
+uint32_t collect2[] = {200,200};
+uint32_t win[] ={B7, C7, D7, E7, C7, E7};
+uint32_t win2[] ={200, 200, 200, 200, 100, 100};
+
+
+static const uint16_t g1[]=
+{
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65535,65535,65535,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,0,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,0,65535,0,65535,0,65535,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t g2[]=
+{
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65535,65535,65535,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,0,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,1280,0,0,0,0,0,0,65535,65535,65535,65535,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,0,65535,0,65535,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,     
+};
+static const uint16_t g3[]=
+{
+	0,0,0,0,65535,0,65535,0,0,0,0,0,0,0,0,0,0,65535,0,65535,0,0,0,0,0,0,0,0,65535,0,65535,0,0,0,0,0,0,0,0,0,65535,65535,0,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,65535,65535,65535,65535,65535,0,0,0,0,0,0,65535,0,65535,65535,0,65535,0,0,0,0,0,0,0,65535,65535,65535,65535,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t blank[]=
+{
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t orb[]=
+{
+	0,0,0,0,55255,0,58519,0,0,0,0,0,0,0,0,0,0,0,0,0,58519,0,0,0,0,0,0,0,58519,0,0,0,0,0,0,0,0,0,0,0,0,0,55255,0,0,0,0,0,0,0,0,0,0,0,0,0,58519,0,0,0,0,0,0,0,9293,9293,9293,9293,0,0,0,0,0,0,0,9293,58519,58519,58519,58519,9293,0,0,0,0,0,0,9293,58519,55255,65535,58519,9293,0,0,0,0,0,0,9293,58519,55255,55255,58519,9293,0,0,0,0,0,0,9293,58519,58519,58519,58519,9293,0,0,0,0,0,0,0,9293,9293,9293,9293,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t orb2[]=
+{
+	0,0,0,0,15615,0,30462,0,0,0,0,0,0,0,0,0,0,0,0,0,30462,0,0,0,0,0,0,0,30462,0,0,0,0,0,0,0,0,0,0,0,0,0,15615,0,0,0,0,0,0,0,0,0,0,0,0,0,30462,0,0,0,0,0,0,0,16621,16621,16621,16621,0,0,0,0,0,0,0,16621,30462,30462,30462,30462,16621,0,0,0,0,0,0,16621,30462,15615,65535,30462,16621,0,0,0,0,0,0,16621,30462,15615,15615,30462,16621,0,0,0,0,0,0,16621,30462,30462,30462,30462,16621,0,0,0,0,0,0,0,16621,16621,16621,16621,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t orb3[]=
+{
+	0,0,0,0,65510,0,49052,0,0,0,0,0,0,0,0,0,0,0,0,0,49052,0,0,0,0,0,0,0,49052,0,0,0,0,0,0,0,0,0,0,0,0,0,65510,0,0,0,0,0,0,0,0,0,0,0,0,0,49052,0,0,0,0,0,0,0,40224,40224,40224,40224,0,0,0,0,0,0,0,40224,49052,49052,49052,49052,40224,0,0,0,0,0,0,40224,49052,65510,65535,49052,40224,0,0,0,0,0,0,40224,49052,65510,65510,49052,40224,0,0,0,0,0,0,40224,49052,49052,49052,49052,40224,0,0,0,0,0,0,0,40224,40224,40224,40224,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t orb4[]=
+{
+	0,0,0,0,49111,0,16247,0,0,0,0,0,0,0,0,0,0,0,0,0,16247,0,0,0,0,0,0,0,16247,0,0,0,0,0,0,0,0,0,0,0,0,0,49111,0,0,0,0,0,0,0,0,0,0,0,0,0,16247,0,0,0,0,0,0,0,24327,24327,24327,24327,0,0,0,0,0,0,0,24327,16247,16247,16247,16247,24327,0,0,0,0,0,0,24327,16247,49111,65535,16247,24327,0,0,0,0,0,0,24327,16247,49111,49111,16247,24327,0,0,0,0,0,0,24327,16247,16247,16247,16247,24327,0,0,0,0,0,0,0,24327,24327,24327,24327,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+static const uint16_t urn[]=
+{
+	0,0,61307,61307,61307,61307,61307,61307,61307,61307,0,0,0,0,0,30918,30918,30918,30918,30918,30918,0,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,61307,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,65535,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,65535,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,61307,0,0,0,0,30918,30918,30918,30918,30918,30918,30918,30918,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,65535,0,0,0,0,61307,61307,61307,61307,61307,61307,65535,61307,0,0,0,0,61307,61307,61307,61307,61307,65535,61307,61307,0,0,0,0,30918,30918,30918,30918,30918,30918,30918,30918,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,61307,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,61307,0,0,0,0,61307,61307,61307,61307,61307,61307,61307,61307,0,0,0,0,0,61307,61307,61307,61307,61307,61307,0,0,0,0,0,0,61307,61307,61307,61307,61307,61307,0,0,0,
+};
+	
+void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
+void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
+int isInside(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t px, uint16_t py)
+{
+	// checks to see if point px,py is within the rectange defined by x,y,w,h
+	uint16_t x2,y2;
+	x2 = x+w;
+	y2 = y+h;
+	int rvalue = 0;
+	if ( (px >= x) && (px <= x2))
+	{
+		// ok, x constraint met
+		if ( (py >= y) && (py <= y2))
+			rvalue = 1;
+	}
+	return rvalue;
+}
+int main()
+{
+	int hinverted = 0;
+	int vinverted = 0;
+	int toggle = 0;
+	int count = 0;
+	int hmoved = 0;
+	int vmoved = 0;
+	uint16_t l = 0;
+	uint16_t r = 0;
+	uint16_t x = 50;
+	uint16_t xa = 20;
+	//x value of urn
+	uint16_t y = 50;
+	uint16_t col = 0;
+	uint16_t oldx = x;
+	uint16_t oldy = y;
+	
+	uint16_t game = 0;
+	//dictates game state
+	
+	uint16_t ghost1 = 0;
+	uint16_t ghost2 = 0;
+	uint16_t ghost3 = 0;
+	uint16_t ghost4 = 0;
+	//collectable item count
+	
+	
+	
+	
+	initClock();
+	initTimer();
+	initSysTick();
+	RCC->AHBENR |= (1 << 18) + (1 << 17); // enable Ports A and B
+	display_begin();
+	pinMode(GPIOB,4,0);
+	pinMode(GPIOB,5,0);
+	pinMode(GPIOA,8,0);
+	enablePullUp(GPIOB,4);
+	enablePullUp(GPIOB,5);
+	enablePullUp(GPIOA,11);
+	enablePullUp(GPIOA,8);
+	
+	while(1)
+	{
+		int count2 =0;
+		int count3 =0;
+		int count4 =0;
+		int count5 =0;
+		int count6 =0;
+		putImage(x,y,12,16,g1,hinverted,0);
+		//place image of ghost
+		putImage(xa,80,12,16,urn,0,0);
+		//place image of urn
+	
+		putImage(100,120,12,16,orb,0,0);
+		putImage(100,30,12,16,orb2,0,0);
+		putImage(10,120,12,16,orb3,0,0);
+		putImage(10,30,12,16,orb4,0,0);
+		//place image of orbs
+		//orbs destroyed when in contact with character
+		
+		while(game == 0)
+		//while character is alive
+		{
+			col = ghost1 + ghost2 +ghost3 + ghost4;
+			//number for banner
+			printNumber(col, 10, 20, RGBToWord(0xff,0xff,0), 0);
+			//print score baner 
+		
+			if(xa<100 && r==0)
+			//makes urn go right
+			{
+					putImage(xa,80,12,16,urn,0,0);
+					xa = xa+1;
+					//increse position by 1
+					if(xa>90)
+					//if position is more than 90
+					{
+						r=1;
+						l=0;
+						//changes direction
+					}
+			}
+		
+			else if(xa>20 && l==0)
+			//makes urn go left
+			{
+					putImage(xa,80,12,16,urn,0,0);
+					xa = xa-1;
+					//decrease position by 1
+					if(xa<30)
+					//if position is less than 30
+					{
+						r=0;
+						l=1;
+						//changes direction
+					}
+			}
+		
+		
+			hmoved = vmoved = 0;
+			hinverted = vinverted = 0;
+			if ((GPIOB->IDR & (1 << 4))==0)
+			{					
+				if (x < 110)
+				{
+					x = x + 1;
+					hmoved = 1;
+					hinverted=0;
+				}
+			
+			
+			}
+			if ((GPIOB->IDR & (1 << 5))==0)
+			{			
+			
+				if (x > 10)
+				{
+					x = x - 1;
+					hmoved = 1;
+					hinverted=1;
+				}			
+			}
+			if ( (GPIOA->IDR & (1 << 11)) == 0)
+			{
+				if (y < 140)
+				{
+					y = y + 1;			
+					vmoved = 1;
+					vinverted = 0;
+				}
+
+			}
+			if ( (GPIOA->IDR & (1 << 8)) == 0)
+			{			
+				if (y > 16)
+				{
+					y = y - 1;
+					vmoved = 1;
+					vinverted = 1;
+				}
+			}
+			if ((vmoved) || (hmoved))
+			{
+			
+				fillRectangle(oldx,oldy,12,16,0);
+				oldx = x;
+				oldy = y;					
+				if (hmoved)
+				{
+					if (toggle)
+						putImage(x,y,12,16,g1,hinverted,0);
+					else
+						putImage(x,y,12,16,g2,hinverted,0);
+				
+					toggle = toggle ^ 1;
+				}
+				else
+				{
+					putImage(x,y,12,16,g3,0,vinverted);
+				}
+				// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
+				if (isInside(xa,80,12,16,x,y) || isInside(xa,80,12,16,x+12,y) || isInside(xa,80,12,16,x,y+16) || isInside(xa,80,12,16,x+12,y+16) )
+				//if character is inside urn
+				{
+					
+					game = 1;
+					//game ends
+					//lose sound
+					if(count2 ==0)
+					{
+						playMusic(&lose, &lose2, 4);
+						count2 = 1;
+					}
+					
+					
+				}
+			
+			
+				if (isInside(100,30,12,16,x,y) || isInside(100,30,12,16,x+12,y) || isInside(100,30,12,16,x,y+16) || isInside(100,30,12,16,x+12,y+16) )
+				//if chqaracter is inside orb
+				{
+					
+					ghost1 = 1;
+					//collection sound
+					if(count3 ==0)
+					{
+						playMusic(&collect, &collect2, 2);
+						count3 = 1;
+					}
+
+				}
+			
+				if (isInside(100,120,12,16,x,y) || isInside(100,120,12,16,x+12,y) || isInside(100,120,12,16,x,y+16) || isInside(100,120,12,16,x+12,y+16) )
+				{
+					
+					ghost2 = 1;
+					//collection sound
+					if(count4 ==0)
+					{
+						playMusic(&collect, &collect2, 2);
+						count4 = 1;
+					}
+				}
+				
+				if (isInside(10,120,12,16,x,y) || isInside(10,120,12,16,x+12,y) || isInside(10,120,12,16,x,y+16) || isInside(10,120,12,16,x+12,y+16) )
+				{
+					
+					ghost3 = 1;
+					//collection sound
+					if(count5 ==0)
+					{
+						playMusic(&collect, &collect2, 2);
+						count5 = 1;
+					}
+				}
+				
+				if (isInside(10,30,12,16,x,y) || isInside(10,30,12,16,x+12,y) || isInside(10,30,12,16,x,y+16) || isInside(10,30,12,16,x+12,y+16) )
+				{
+					
+					ghost4 = 1;
+					//collection sound
+					if(count6 ==0)
+					{
+						playMusic(&collect, &collect2, 2);
+						count6 = 1;
+					}
+				}
+				
+			}//end if
+			
+			int count1=0;
+			if(col == 4)
+			//if all orbs are collected
+			{
+				printText("You win!", 35, 50, RGBToWord(0xff,0xff,0), 0);
+				//win sound
+				if (count1 == 0)
+				{
+					playMusic(&win, &win2, 6);
+					count1= 1;
+				}
+				
+				
+				while(1)
+				//loops win screen
+				;
+		
+			}
+			delay(50);
+			
+		}//endwhile
+			
+			printText("Dead!", 10, 20, RGBToWord(0xff,0xff,0), 0);
+		  printText("Press <- & ->", 15, 50, RGBToWord(0xff,0xff,0), 0);
+			
+			if ((GPIOB->IDR & (1 << 4))==0 && (GPIOB->IDR & (1 << 5))==0) 
+			//if left & right button are pressed
+			{
+				putImage(xa,80,12,16,blank,0,0);
+				fillRectangle(0,0,120,160,0);
+				//resets screen
+				xa = 20;
+				ghost1 = 0;
+				ghost2 = 0;
+				ghost3 = 0;
+				ghost4 = 0;
+				x = 50;
+				y = 50;
+				game = 0;
+				r=0;
+				l=1;
+				//all game perameters are reset
+				
+			}
+		
+	}//end while
+	return 0;
+}//end main
+
+
+
+
+
+void playMusic(uint32_t *Notes, uint32_t *Duration, int number)
+{
+	number = number+1;
+  for(int i = 0; i<number; i++)
+	{
+		playNote(Notes[i], Duration[i]);
+	}
+}
+void playNote(uint32_t Freq, uint32_t duration)
+{
+		TIM14->CR1 = 0; // Set Timer 14 to default values
+	TIM14->CCMR1 = (1 << 6) + (1 << 5);
+	TIM14->CCER |= (1 << 0);
+	TIM14->PSC = 48000000UL/65536UL; // yields maximum frequency of 21kHz when ARR = 2;
+	TIM14->ARR = (48000000UL/(uint32_t)(TIM14->PSC))/((uint32_t)Freq);
+	TIM14->CCR1 = TIM14->ARR/2;	
+	TIM14->CNT = 0;
+	TIM14->CR1 |= (1 << 0);
+	power_saving_delay(duration);
+	TIM14->CR1 = 0; //turn off the timer (stops sounds)
+}
+void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber)
+{
+	Port->PUPDR = Port->PUPDR &~(3u << BitNumber*2); // clear pull-up resistor bits
+	Port->PUPDR = Port->PUPDR | (1u << BitNumber*2); // set pull-up bit
+}
+void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode)
+{
+	/*
+	*/
+	uint32_t mode_value = Port->MODER;
+	Mode = Mode << (2 * BitNumber);
+	mode_value = mode_value & ~(3u << (BitNumber * 2));
+	mode_value = mode_value | Mode;
+	Port->MODER = mode_value;
+}
+void delay(volatile uint32_t dly)
+{
+	uint32_t end_time = dly + milliseconds;
+	while(milliseconds != end_time)
+		__asm(" wfi "); // sleep
+}
+void initClock(void)
+{
+// This is potentially a dangerous function as it could
+// result in a system with an invalid clock signal - result: a stuck system
+        // Set the PLL up
+        // First ensure PLL is disabled
+        RCC->CR &= ~(1u<<24);
+        while( (RCC->CR & (1 <<25))); // wait for PLL ready to be cleared
+        
+  // Warning here: if system clock is greater than 24MHz then wait-state(s) need to be
+        // inserted into Flash memory interface
+				
+        FLASH->ACR |= (1 << 0);
+        FLASH->ACR &=~((1u << 2) | (1u<<1));
+        // Turn on FLASH prefetch buffer
+        FLASH->ACR |= (1 << 4);
+        // set PLL multiplier to 12 (yielding 48MHz)
+        RCC->CFGR &= ~((1u<<21) | (1u<<20) | (1u<<19) | (1u<<18));
+        RCC->CFGR |= ((1<<21) | (1<<19) ); 
+
+        // Need to limit ADC clock to below 14MHz so will change ADC prescaler to 4
+        RCC->CFGR |= (1<<14);
+
+        // and turn the PLL back on again
+        RCC->CR |= (1<<24);        
+        // set PLL as system clock source 
+        RCC->CFGR |= (1<<1);
+}
+void initTimer()
+{
+	// Power up the timer module
+	RCC->APB1ENR |= (1 << 8);
+	pinMode(GPIOB,1,2); // Assign a non-GPIO (alternate) function to GPIOB bit 1
+	GPIOB->AFR[0] &= ~(0x0fu << 4); // Assign alternate function 0 to GPIOB 1 (Timer 14 channel 1)
+	TIM14->CR1 = 0; // Set Timer 14 to default values
+	TIM14->CCMR1 = (1 << 6) + (1 << 5);
+	TIM14->CCER |= (1 << 0);
+	TIM14->PSC = 48000000UL/65536UL; // yields maximum frequency of 21kHz when ARR = 2;
+	TIM14->ARR = (48000000UL/(uint32_t)(TIM14->PSC))/((uint32_t)C4);
+	TIM14->CCR1 = TIM14->ARR/2;	
+	TIM14->CNT = 0;
+}
+void power_saving_delay(uint32_t dly)
+{
+	uint32_t end_time = milliseconds + dly;
+	while(milliseconds < end_time)
+	{
+		__asm(" WFI "); // sleep
+	}
+}
+void initSysTick(void)
+{
+	SysTick->LOAD = 48000;
+	SysTick->CTRL = 7;
+	SysTick->VAL = 10;
+	__asm(" cpsie i "); // enable interrupts
+}
+void SysTick_Handler(void)
+{
+	milliseconds++;
+}
