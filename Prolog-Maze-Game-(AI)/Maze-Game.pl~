@@ -1,0 +1,185 @@
+%_________Create Maze_________
+:- dynamic walls/2.
+:- dynamic maze_size/2.
+%MAZE 1
+maze_size(5,5).
+walls(2,2).
+walls(2,3).
+walls(2,4).
+walls(3,4).
+walls(4,4).
+walls(4,3).
+water(3,3).
+water(4,2).
+%MAZE 2
+%maze_size(10,10).
+%walls(2,4).
+%walls(3,4).
+%walls(4,4).
+%walls(5,4).
+%walls(6,4).
+%walls(7,4).
+%walls(8,4).
+%walls(9,4).
+%walls(10,4).
+%walls(6,5).
+%walls(6,6).
+%walls(6,7).
+%walls(6,8).
+%walls(6,9).
+%walls(7,7).
+%walls(8,7).
+%walls(8,8).
+%walls(8,9).
+%water(1,2).
+%water(8,10).
+
+%_________Move function_________
+%Right
+move(pos(X,Y), pos(X1,Y)) :-
+    maze_size(Width,_), X1 is X+1, X1 =< Width,
+    \+ walls(X1,Y).
+
+%Left
+move(pos(X,Y), pos(X1,Y)) :-
+    X1 is X-1, X1>= 1,
+    \+ walls(X1,Y).
+
+%Up
+move(pos(X,Y), pos(X,Y1)) :-
+    maze_size(_,Height), Y1 is Y+1, Y1 =< Height,
+    \+ walls(X,Y1).
+
+%Down
+move(pos(X,Y), pos(X,Y1)) :-
+    Y1 is Y-1, Y1 >= 1,
+    \+ walls(X,Y1).
+
+%_________Add energy functions_________
+%Calculate each steps energy
+step(pos(X,Y), pos(X1,Y1), C) :-
+    move(pos(X,Y), pos(X1,Y1)),
+    (   water(X1,Y1) -> C = 3 ; C = 1 ).
+
+%Calculate the energy for each path
+path_energy([_], 0).
+path_energy([A,B|Rest], E) :-
+    step(A,B,C),
+    path_energy([B|Rest], E1),
+    E is E1 + C.
+
+%Show the energy for each path function
+path_dfs_e(Start, Goal, Path, Energy) :- path_dfs(Start, Goal, Path), path_energy(Path, Energy).
+path_ids_e(Start, Goal, Path, Energy) :- path_ids(Start, Goal, Path), path_energy(Path, Energy).
+
+%_________Lowest Energy Cost Search_________
+path_lec(Start, Goal, Path, Energy) :-
+    lec([0-[Start,0,[Start]]], Goal, Rev, Energy),
+    reverse(Rev, Path).
+
+lec([Energy-[Goal,_,Acc]|_], Goal, Acc, Energy).
+lec(Open, Goal, Path, Energy) :-
+    keysort(Open, [ _-Best | Rest ]),
+    Best = [State, G, Acc],
+    findall(Energy1-[Next, G1, [Next|Acc]],
+            (   step(State,Next,C),
+                \+ member(Next, Acc),
+                G1 is G + C,
+                Energy1 = G1),
+            Kids),
+    append(Rest, Kids, Open1),
+    lec(Open1, Goal, Path, Energy).
+
+
+
+%_________Depth First Search_________
+%Path Function
+path_dfs(Start, Goal, Path) :-
+    dfs(Start, Goal, [], Rev), reverse(Rev, Path).
+
+dfs(State, State, Vis, [State|Vis]).
+dfs(State, Goal, Vis, Path) :-
+    move(State, Next),
+    \+ member(Next, Vis),
+    dfs(Next, Goal, [State|Vis], Path).
+
+
+%_________Iterative-Deepening Search (IDS)_________
+%Path Function
+path_ids(Start, Goal, Path) :-
+    id(0, Start, Goal, Path).
+
+id(Limit, S, G, P) :-
+    dls(S, G, Limit, [], Rev), reverse(Rev, P).
+
+id(Limit, S, G, P) :-
+    Limit1 is Limit+1,
+    id(Limit1, S, G, P).
+
+dls(State, State, _L, Vis, [State|Vis]).
+
+dls(State, Goal, L, Vis, Path) :-
+    L > 0, L1 is L-1,
+    move(State, Next),
+    \+ member(Next, Vis),
+    dls(Next, Goal, L1, [State|Vis], Path).
+
+%_________A* Search Manhattan Heuristic_________
+%Priorty Helper
+:- dynamic compare_f/3.
+compare_f(<,[_,_,F1,_],[_,_,F2,_]) :- F1 < F2.
+compare_f(>,[_,_,F1,_],[_,_,F2,_]) :- F1 >= F2.
+
+%Path Function
+path_a(Start, Goal, Path) :-
+    h(Start, Goal, H0),
+    a([[Start, 0, H0, [Start]]], Goal, Rev),
+    reverse(Rev, Path).
+
+a([[Goal, _, _, Path]|_], Goal, Path).
+a(Open, Goal, Path) :-
+    min_member(compare_f, Open, Best),
+    delete(Open, Best, Rest),
+    Best = [State, G, _, Acc],
+    findall([Next, G1, F1, [Next|Acc]],
+            (move(State, Next),
+             \+ member(Next, Acc),
+             G1 is G + 1,
+             h(Next, Goal, HN),
+             F1 is G1+HN),
+            Children),
+    append(Rest, Children, Open1),
+    a(Open1, Goal, Path).
+
+
+h(pos(X1, Y1), pos(X2, Y2), H) :-
+    DX is abs(X1-X2),
+    DY is abs(Y1-Y2),
+    H is DX + DY.
+
+%_________A* Search Chebyshev Heuristic_________
+%Path Function
+path_a2(Start,Goal,Path, Energy) :-
+    h_cheb(Start,Goal,H0),
+    astar2([H0-[Start,0,[Start]]], Goal, Rev, Energy),
+    reverse(Rev, Path).
+
+astar2([ _-[Goal, Energy, Path]|_], Goal, Path, Energy).
+astar2(Open, Goal, Path, Energy) :-
+    keysort(Open, Sorted),
+    Sorted = [ _-Best | Rest ],
+    Best = [State, G, Acc],
+    findall(F1-[Next,G1,[Next|Acc]],
+            (   step(State, Next, C),
+                \+ member(Next,Acc),
+                G1 is G + C,
+                h_cheb(Next, Goal, HN),
+                F1 is G1+HN),
+            Children),
+    append(Rest, Children, Open1),
+    astar2(Open1, Goal, Path, Energy).
+
+h_cheb(pos(X1,Y1), pos(X2,Y2), H) :-
+    DX is abs(X1-X2),
+    DY is abs(Y1-Y2),
+    H is max(DX,DY).
