@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualize Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/visualize_data.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+</head>
+<body>
+    <a href="/" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
+    <h1>Visualize Data</h1>
+    <div style="margin-bottom: 30px;">
+        <label for="sessionSelect" style="font-size: 1.2rem; margin-right: 10px;">Select Session:</label>
+        <select id="sessionSelect" name="session_id" style="padding: 8px; font-size: 1rem;">
+            {% for s_id, s_name in sessions %}
+                <option value="{{ s_id }}">{{ s_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="button-container">
+        <a href="#" class="button-box green" onclick="goToBarChart()">
+            <i class="fas fa-chart-bar"></i>
+            <p>Bar Chart</p>
+        </a>
+        <a href="#" class="button-box purple" onclick="goToBoxPlot()">
+            <i class="fas fa-box"></i>
+            <p>Box Plot</p>
+        </a>
+        <a href="#" class="button-box orange" onclick="goToHistogram()">
+            <i class="fas fa-chart-bar"></i>
+            <p>Histogram</p>
+        </a>
+        <a href="#" class="button-box brown" onclick="goToLineGraph()">
+            <i class="fas fa-chart-line"></i>
+            <p>Line Graph</p>
+        </a>
+        <a href="#" class="button-box brown" onclick="goToPieChart()">
+            <i class="fas fa-chart-line"></i>
+            <p>Pie Chart</p>
+        </a>
+        <a href="#" class="button-box red" onclick="goToPDF()">
+            <i class="fas fa-file-pdf"></i>
+            <p>PDF</p>
+        </a>
+    </div>
+    <script>
+        // Get the selected session from the input field
+        const sessionSelect = document.getElementById("sessionSelect");
+
+        // Restore selected session from localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedSessionId = localStorage.getItem("selectedSessionId");
+            if (savedSessionId) {
+                sessionSelect.value = savedSessionId;
+            }
+        });
+
+        // Save selection to localStorage on change
+        sessionSelect.addEventListener('change', () => {
+            localStorage.setItem("selectedSessionId", sessionSelect.value);
+        });
+        // Navigate Functions
+        function goToBarChart() {
+            const sessionId = document.getElementById("sessionSelect").value;
+            if (!sessionId) {
+                alert("Please select a session before generating a bar chart.");
+                return;
+            }
+            window.location.href = "/bar_chart?session_id=" + sessionId;
+        }
+        function goToBoxPlot() {
+            const sessionId = document.getElementById("sessionSelect").value;
+            if (!sessionId) {
+                alert("Please select a session before generating a box plot.");
+                return;
+            }
+            window.location.href = "/box_plot?session_id=" + sessionId;
+        }
+        function goToHistogram() {
+            const sessionId = document.getElementById("sessionSelect").value;
+            if (!sessionId) {
+                alert("Please select a session before generating a histogram.");
+                return;
+            }
+            window.location.href = "/histogram?session_id=" + sessionId;
+        }
+        function goToLineGraph() {
+            const sessionId = document.getElementById("sessionSelect").value;
+            if (!sessionId) {
+                alert("Please select a session before generating a line graph.");
+                return;
+            }
+            window.location.href = "/line_graph?session_id=" + sessionId;
+        }
+        function goToPieChart() {
+            const sessionId = document.getElementById("sessionSelect").value;
+            if (!sessionId) {
+                alert("Please select a session before generating a pie chart.");
+                return;
+            }
+            window.location.href = "/pie_chart?session_id=" + sessionId;
+        }
+        function goToPDF() {
+            const sessionId = document.getElementById("sessionSelect").value;
+            if (!sessionId) {
+                alert("Please select a session before generating a PDF.");
+                return;
+            }
+            window.location.href = "/pdf_form?session_id=" + sessionId;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+/* login.css */
+body {
+    background: linear-gradient(135deg, #1e3c73, #2a5298);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    margin-top: 5%;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.login-form {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    width: 300px;
+    margin: 0 auto;
+    border-radius: 10px;
+}
+
+.login-form input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+}
+
+.login-form button {
+    width: 80%;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: none;
+    font-size: 1rem;
+    background-color: green;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.login-form button:hover {
+    background-color: darkgreen;
+}
+
+.signup-text {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.signup-text a {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.signup-text a:hover {
+    color: #ffcc00;
+}

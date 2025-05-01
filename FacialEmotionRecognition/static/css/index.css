@@ -1,0 +1,74 @@
+/* Positioning for top-right nav buttons */
+.nav-top-right {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.btn-auth {
+    text-decoration: none;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    margin-left: 10px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+    font-size: 1rem;
+}
+
+.btn-auth:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+body {
+    background: linear-gradient(135deg, #1e3c73, #2a5298);
+    color: white;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+}
+
+.container {
+    margin-top: 5%;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.button-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 200px;
+    text-decoration: none;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 15px;
+    transition: 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.button-box i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.button-box.green { background: green; }
+.button-box.blue { background: skyblue; }
+.button-box.red { background: red; }
+
+.button-box:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+}

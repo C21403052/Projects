@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Goodbye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <style>
+        .goodbye-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .goodbye-container h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        .goodbye-container p {
+            font-size: 1.5rem;
+            color: #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="goodbye-container">
+        <h1>Goodbye!</h1>
+        <p>The system will shut down in a few seconds...</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generate PDF</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/visualize_data.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+    <style>
+      .centered-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+      }
+      .checkbox-group {
+        margin-left: 20px;
+        margin_bottom: 10px;
+      }
+      .checkbox-group label {
+        display: block;
+        margin: 4px 0;
+      }
+      .submit-button {
+        background: green;
+        color: white;
+        padding: 10px 20px;
+        border_radius: 8px;
+        border: none;
+        cursor: pointer;
+      }
+      #loadingSpinner {
+        font-weight: bold;
+        color: white;
+      }
+      </style>
+</head>
+<body>
+  <a href="{{ url_for('visualize_data') }}" class="back-button">
+    <i class="fas fa-arrow-left"></i> Back</i>
+  </a>
+  <h1>Generate PDF</h1>
+
+  <div class="centered-container">
+    <form method="POST" action="{{ url_for('generate_pdf') }}">
+      <input type="hidden" name="session_id" value="{{ session_id }}">
+      <p><strong>Session Selected:</strong> {{ session_name }}</p>
+      <p><strong>Select the Charts to Include:</strong></p>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="charts" value="bar"> Bar Chart</label>
+        <label><input type="checkbox" name="charts" value="box"> Box Plot</label>
+        <label><input type="checkbox" name="charts" value="pie"> Pie Chart</label>
+
+        <!-- HISTOGRAM CHOICES -->
+        <label style="margin-top:8px; font-weight:bold;">Histogram:</label>
+        <label><input type="checkbox" name="histogram" value="all"> All Emotions</label>
+        <label><input type="checkbox" name="histogram" value="anger"> Anger</label>
+        <label><input type="checkbox" name="histogram" value="disgust"> Disgust</label>
+        <label><input type="checkbox" name="histogram" value="fear"> Fear</label>
+        <label><input type="checkbox" name="histogram" value="happy"> Happy</label>
+        <label><input type="checkbox" name="histogram" value="neutral"> Neutral</label>
+        <label><input type="checkbox" name="histogram" value="sad"> Sad</label>
+        <label><input type="checkbox" name="histogram" value="surprised"> Surprised</label>
+
+        <!-- LINE GRAPH CHOICES -->
+        <label style="margin-top:8px; font-weight:bold;">Line Chart:</label>
+        <label><input type="checkbox" name="linegraph" value="all"> All Emotions</label>
+        <label><input type="checkbox" name="linegraph" value="anger"> Anger</label>
+        <label><input type="checkbox" name="linegraph" value="disgust"> Disgust</label>
+        <label><input type="checkbox" name="linegraph" value="fear"> Fear</label>
+        <label><input type="checkbox" name="linegraph" value="happy"> Happy</label>
+        <label><input type="checkbox" name="linegraph" value="neutral"> Neutral</label>
+        <label><input type="checkbox" name="linegraph" value="sad"> Sad</label>
+        <label><input type="checkbox" name="linegraph" value="surprised"> Surprised</label>
+
+      </div>
+      <div style="margin-top: 20px; text-align: center;">
+        <button type="submit" class="submit-button" id="generateBtn">
+          <span id="btnText">Generate PDF</span>
+          <span id="loadingSpinner" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Generating...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+  <script>
+    const form = document.querySelector("form");
+    const btnText = document.getElementById("btnText");
+    const spinner = document.getElementById("loadingSpinner");
+
+    form.addEventListener("submit", () => {
+      btnText.style.display = "none";
+      spinner.style.display = "inline-block";
+    });
+  </script>
+</body>
+</html>

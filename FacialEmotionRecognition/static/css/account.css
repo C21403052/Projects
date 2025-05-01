@@ -1,0 +1,123 @@
+body {
+    background: linear-gradient(135deg, #1e3c73, #2a5298);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 100px;
+    text-align: center;
+}
+
+.container h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.nav-top-left {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.nav-top-right {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.nav-center {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.back-button {
+    display: inline-block;
+    font-size: 1rem;
+    color: white;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.btn-auth {
+    text-decoration: none;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+    font-size: 1rem;
+    margin-left: 10px;
+}
+.btn-auth:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+
+.sessions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    max-width: 1000px;
+}
+
+.sessions-table th {
+  text-align: center;
+  padding: 12px;
+  border-bottom: 2px solid #fff;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.sessions-table th:last-child {
+  text-align: right;
+}
+
+.sessions-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.action-buttons {
+    text-align: right;
+}
+.action-button {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.action-button:hover {
+    opacity: 0.8;
+}
+
+.rename-btn {
+    background: green;
+}
+.delete-btn {
+    background: red;
+}

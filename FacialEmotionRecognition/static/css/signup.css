@@ -1,0 +1,67 @@
+/* signup.css */
+body {
+    background: linear-gradient(135deg, #1e3c73, #2a5298);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    margin-top: 5%;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.signup-form {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    width: 300px;
+    margin: 0 auto;
+    border-radius: 10px;
+}
+
+.signup-form input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+}
+
+.signup-form button {
+    width: 80%;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: none;
+    font-size: 1rem;
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.signup-form button:hover {
+    background-color: darkblue;
+}
+
+.login-text {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.login-text a {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.login-text a:hover {
+    color: #ffcc00;
+}

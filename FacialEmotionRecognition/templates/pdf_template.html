@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+    <title>Session Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        h1 { color: #333; }
+        .chart { margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Session Report</h1>
+    <h2>Session Name: {{ session_name }}</h2>
+    <h3>Created by: {{ user_name }}</h3>
+
+    <p><strong>Session Duration:</strong> {{ session_duration }}</p>
+    <p><strong>Created At:</strong> {{ created_at }}</p>
+
+    <h3>Average Emotion Intensities</h3>
+    <ul>
+        {% for emotion, intensity in avg_intensities.items() %}
+            <li><strong>{{ emotion }}</strong>: {{ "%.2f"|format(intensity) }}</li>
+        {% endfor %}
+    </ul>
+
+    {% for title, path in chart_paths.items() %}
+        {% if path and path != "None" %}
+            <div class="chart">
+                <img src="{{ path }}" width="600">
+            </div>
+        {% endif %}
+    {% endfor %}
+
+
+</body>
+</html>

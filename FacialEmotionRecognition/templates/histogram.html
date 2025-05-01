@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Histogram - {{ session_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/visualize_data.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+</head>
+<body>
+  <a href="{{ url_for('visualize_data') }}" class="back-button">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
+  <h1>Histogram - {{ session_name }}</h1>
+  <div style="margin-top:40px;">
+    <img src="{{ histogram_path }}" alt="Histogram for session {{ session_id }}" style="max-width:700px;">
+  </div>
+  <div stye="margin-top: 20px;">
+        <!-- Buttons to change the histogram graphs displayed -->
+        <button onclick="reloadGraph('anger')" style="background:red; color: white; margin: 5px; padding: 10px;"> Anger</button>
+        <button onclick="reloadGraph('disgust')" style="background:green; color: white; margin: 5px; padding: 10px;"> Disgust</button>
+        <button onclick="reloadGraph('fear')" style="background:lightblue; color: white; margin: 5px; padding: 10px;"> Fear</button>
+        <button onclick="reloadGraph('happy')" style="background:gold; color: white; margin: 5px; padding: 10px;"> Happy</button>
+        <button onclick="reloadGraph('neutral')" style="background:brown; color: white; margin: 5px; padding: 10px;"> Neutral</button>
+        <button onclick="reloadGraph('sad')" style="background:blue; color: white; margin: 5px; padding: 10px;"> Sad</button>
+        <button onclick="reloadGraph('surprised')" style="background:purple; color: white; margin: 5px; padding: 10px;"> Surprised</button>
+        <button onclick="reloadGraph('all')" style="background:gray; color: white; margin: 5px; padding: 10px;"> Show All</button>
+    </div>
+    <script>
+        // Function to reload the graph on the user input
+        function reloadGraph(emotion) {
+            const sid = "{{ session_id }}";
+            window.location.href = `/histogram?session_id=${sid}&emotion=${emotion}`;
+        }
+    </script>
+</body>
+</html>

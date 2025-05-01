@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Expression Recognition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+</head>
+<body>
+    <div class="nav-top-right">
+        {% if logged_in %}
+            <a href="{{ url_for('account') }}" class="btn-auth">{{ name }}</a>
+        {% endif %}
+    </div>
+    <div class="container">
+        <h1>Facial Expression Recognition</h1>
+
+        <div class="button-container">
+            <a href="/create_session" class="button-box green">
+                <i class="fas fa-play-circle"></i>
+                <p>Create Session</p>
+            </a>
+            <a href="/visualize_data" class="button-box blue">
+                <i class="fas fa-chart-bar"></i>
+                <p>Visualize Data</p>
+            </a>
+            <form action="/shutdown" method="post">
+                <button type="submit" class="button-box red">
+                    <i class="fas fa-power-off"></i>
+                    <p>Shutdown</p>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

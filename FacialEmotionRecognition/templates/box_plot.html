@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Box Plot - {{ session_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/visualize_data.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+</head>
+<body>
+    <a href="{{ url_for('visualize_data') }}" class="back-button">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+
+    <h1>Box Plot - {{ session_name }}</h1>
+    <div style="margin-top:40px;">
+      <img src="{{ box_plot_path }}" alt="Box Plot for {{ session_name }}" style="max-width:700px;">
+    </div>
+</body>
+</html>

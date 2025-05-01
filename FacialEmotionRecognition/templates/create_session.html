@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Session</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create_session.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
+        <h1>CREATE SESSION</h1>
+
+        <div class="display-container">
+            <div class="display-box">
+                <img id="intensity-feed" src="{{ url_for('intensity_feed') }}" width="100%" alt="Intensity Feed">
+            </div>
+            <div class="display-box">
+                <img id="video-feed" src="{{ url_for('video_feed') }}" width="100%" alt="Video Feed">
+            </div>
+        </div>
+
+        <label for="session_name"></label><input type="text" id="session_name" class="session-input" placeholder="ENTER NAME OF SESSION">
+
+        <div class="button-container">
+            <button id="start-btn" class="btn btn-start" onclick="startSession()">START</button>
+            <button id="pause-btn" class="btn btn-pause" onclick="pauseSession()" disabled>PAUSE</button>
+            <button id="end-btn" class="btn btn-end" onclick="endSession()" disabled>END</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables to keep track of sessions status
+        let isPaused = false;
+        let isRecording = false;
+
+        // Error check variables for invalid character inputs
+        const invalidCharsRegex = /[\\\/:\*\?"<>\|]/;
+
+        // Function to start the session
+        function startSession() {
+            // Get the session name from user input
+            const sessionName = document.getElementById("session_name").value;
+
+            // If no session name inform user
+            if (!sessionName) {
+                alert("Please enter a session name!");
+                return;
+            }
+
+            // Check for invalid characters
+            if (invalidCharsRegex.test(sessionName)) {
+                alert("Session name cannot contain any of the following characters: \\ / : * ? \" < > |");
+                return;
+            }
+
+            // Fetch the start session route
+            fetch('/start_session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ session_name: sessionName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // If data status is successful start the session
+                if (data.status === "success") {
+                    alert(data.message);
+                    document.getElementById("start-btn").disabled = true;
+                    document.getElementById("pause-btn").disabled = false;
+                    document.getElementById("end-btn").disabled = false;
+                    isRecording = true;
+                }
+                // Else inform user of error
+                else {
+                    alert("Error: " + data.message);
+                    document.getElementById("start-btn").disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error("Fetch Error:", error);
+                alert("Failed to start session. Please check console for details.");
+                document.getElementById("start-btn").disabled = false;
+            });
+        }
+
+        // Function to pause session
+        function pauseSession() {
+            fetch('/pause_session', { method: 'POST' }).then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // Inform the user the session is paused
+                    alert(data.message);
+                    isPaused = true;
+                    isRecording = false;
+                    // Change Start button text
+                    const startBtn = document.getElementById('start-btn');
+                    startBtn.innerText = "RESUME";
+                    // Update button state and call resume session function
+                    startBtn.onclick = resumeSession;
+                    startBtn.disabled = false;
+                    // Disable pause button
+                    document.getElementById("pause-btn").disabled = true;
+                } else {
+                    alert("Error: " + data.message);
+                }
+            });
+        }
+        // Function to resume session
+        function resumeSession() {
+            fetch('/resume_session', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        isPaused = false;
+                        isRecording = true;
+                        // Change the text back and update the status
+                        const startBtn = document.getElementById('start-btn');
+                        startBtn.innerText = "START";
+                        startBtn.onclick = startSession;
+                        startBtn.disabled = true;
+                        document.getElementById('pause-btn').disabled = false;
+                        document.getElementById('end-btn').disabled = false;
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        // Function to end session
+        function endSession() {
+            // Call the end session route
+            fetch('/end_session', { method: 'POST' }).then(response => response.json())
+            .then(data => {
+                // If success inform user and update buttons status and text
+                if (data.status === "success") {
+                    alert(data.message);
+
+                    // Reset the buttons status
+                    document.getElementById("start-btn").disabled = false;
+                    document.getElementById("start-btn").innerText = "START";
+                    document.getElementById("start-btn").onclick = startSession;
+                    document.getElementById("pause-btn").disabled = true;
+                    document.getElementById("end-btn").disabled = true;
+                    isPaused = false;
+                    isRecording = false;
+                } else {
+                    alert("Error: " + data.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
